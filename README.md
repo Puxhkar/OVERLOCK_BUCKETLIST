@@ -2,7 +2,7 @@
 
 AI-Powered Inventory Demand Forecasting & Intelligent Restocking System.
 
-Live Demo: https://overlock-bucketlist-1lbz.vercel.app/  
+Live Demo: https://overlock-bucketlist-hf36.vercel.app/ 
 Demo Video: https://www.loom.com/share/7b184df315a444c6818791ee3d9c512a  
 Presentation (PPT): https://docs.google.com/presentation/d/1wdpD4sp2Pk8F6DHxV_89BZjLjeNiu0Bj/edit?usp=drive_link&ouid=104570748730102143012&rtpof=true&sd=true  
 GitHub Repository: https://github.com/Puxhkar/OVERLOCK_BUCKETLIST
