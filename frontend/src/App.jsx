@@ -6,6 +6,7 @@ import LandingPage from './components/LandingPage';
 import UploadSection from './components/UploadSection';
 import Dashboard from './components/Dashboard';
 import History from './components/History';
+import PortfolioOverview from './components/PortfolioOverview';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -48,12 +49,12 @@ function App() {
     if (data.skus.length > 0) {
       setSelectedSku(data.skus[0]);
     }
-    setCurrentView('dashboard');
+    setCurrentView('portfolio');
   };
 
   const handleHistorySelect = (sku) => {
     setSelectedSku(sku);
-    setCurrentView('dashboard');
+    setCurrentView('portfolio');
   };
 
   const fetchSkuData = useCallback(async (sku) => {
@@ -88,7 +89,7 @@ function App() {
             <div style={{ background: '#181C32', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Asterisk size={22} color="white" />
             </div>
-            <span style={{ color: 'var(--text-main)' }}>SmartStock AI</span>
+            <span style={{ color: 'var(--text-main)' }}>InventraCloud</span>
           </div>
 
           <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -110,49 +111,43 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Top Navbar */}
-      <nav className="top-navbar animate-fade-in">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white' }}>
-          <div
-            className="hover-scale"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '6px' }}
-            onClick={() => {
-              if (currentView === 'upload' && isUploaded) setCurrentView('dashboard');
-              else if (currentView === 'history') setCurrentView('dashboard');
-              else setCurrentView('landing');
-            }}
-            title="Go Back"
-          >
-            <ArrowLeft size={24} color="white" />
-          </div>
-          <span style={{ fontWeight: 600, fontSize: '1.2rem', letterSpacing: '0.5px', marginLeft: '4px' }}>SmartStock AI</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
-          {/* Navigation icons removed for simplicity. Use Back button. */}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="navbar-icon" title="Settings" style={{ cursor: 'not-allowed', opacity: 0.4 }}>
-            <Settings size={20} />
-          </div>
-          <div className="hover-scale" style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #A78BFA, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 600, cursor: 'default', fontSize: '0.9rem' }}>
-            D
-          </div>
-        </div>
-      </nav>
-
       {/* Main Area */}
       <div className="main-content">
         <header className="top-bar animate-fade-in">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            {/* Removed the ArrowLeft button here as per instruction */}
+            <div
+              className="hover-scale"
+              style={{
+                display: currentView === 'landing' ? 'none' : 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                padding: '8px',
+                background: 'white',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '8px',
+                boxShadow: 'var(--shadow-sm)'
+              }}
+              onClick={() => {
+                if (currentView === 'upload' && isUploaded) setCurrentView('portfolio');
+                else if (currentView === 'dashboard') setCurrentView('portfolio');
+                else if (currentView === 'history') setCurrentView('portfolio');
+                else if (currentView === 'portfolio') setCurrentView('landing');
+                else setCurrentView('landing');
+              }}
+              title="Go Back"
+            >
+              <ArrowLeft size={20} color="var(--text-main)" />
+            </div>
             <div>
-              <h1 style={{ fontSize: '1.8rem', color: 'var(--text-main)', margin: 0 }}>
-                {currentView === 'history' ? 'History' : currentView === 'upload' ? 'Import Data' : 'Dashboard Overview'}
-              </h1>
-              <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0', fontSize: '0.95rem' }}>
-                {currentView === 'history' ? 'View past analyses and reports' : currentView === 'upload' ? 'Upload historical datasets for AI forecasting' : 'Detailed supply chain analytics and AI forecasts'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <img src="/logo.png" alt="InventraCloud Logo" style={{ height: '32px', width: 'auto' }} />
+                <h1 style={{ fontSize: '1.8rem', color: 'var(--text-main)', margin: 0 }}>
+                  {currentView === 'history' ? 'History' : currentView === 'upload' ? 'Import Data' : currentView === 'portfolio' ? 'Control Tower' : 'Dashboard Overview'}
+                </h1>
+              </div>
+              <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 44px', fontSize: '0.95rem' }}>
+                {currentView === 'history' ? 'View past analyses and reports' : currentView === 'upload' ? 'Upload historical datasets for AI forecasting' : currentView === 'portfolio' ? 'Multi-SKU Portfolio Analysis' : 'Detailed supply chain analytics and AI forecasts'}
               </p>
             </div>
           </div>
@@ -196,6 +191,9 @@ function App() {
         <main className="animate-fade-in">
           {currentView === 'history' && <History onSelect={handleHistorySelect} />}
           {currentView === 'upload' && <UploadSection onUploadSuccess={handleUploadSuccess} />}
+          {currentView === 'portfolio' && (
+            <PortfolioOverview onSelectSku={(sku) => { setSelectedSku(sku); fetchSkuData(sku); setCurrentView('dashboard'); }} />
+          )}
           {currentView === 'dashboard' && (
             !isUploaded ? (
               <div style={{ textAlign: 'center', marginTop: '4rem' }}>
@@ -210,6 +208,7 @@ function App() {
                 forecastData={forecastData}
                 insightsData={insightsData}
                 recommendData={recommendData}
+                skus={skus}
               />
             )
           )}

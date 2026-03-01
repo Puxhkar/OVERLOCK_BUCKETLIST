@@ -59,7 +59,7 @@ const LandingPage = ({ onGetStarted }) => {
 
             {/* Why Use This Section */}
             <section id="whyus" style={{ margin: '0 auto 6rem', maxWidth: '1000px', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '2.5rem', marginBottom: '2rem' }}>Why choose <span className="text-gradient">SmartStock AI?</span></h2>
+                <h2 style={{ fontSize: '2.5rem', marginBottom: '2rem' }}>Why choose <span className="text-gradient">InventraCloud?</span></h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', textAlign: 'left' }}>
                     <div className="glass-panel hover-scale" style={{ background: 'white' }}>
                         <div style={{ width: '40px', height: '40px', background: 'rgba(124, 58, 237, 0.1)', color: 'var(--accent-primary)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}><TrendingUp size={20} /></div>
@@ -76,7 +76,7 @@ const LandingPage = ({ onGetStarted }) => {
 
             {/* Features */}
             <section id="features" style={{ margin: '6rem auto', maxWidth: '1200px' }}>
-                <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '3rem' }}>How SmartStock AI <span className="text-gradient-primary">Works</span></h2>
+                <h2 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '3rem' }}>How InventraCloud <span className="text-gradient-primary">Works</span></h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
 
                     <div className="glass-panel hover-scale" style={{ background: 'white' }}>

@@ -145,6 +145,19 @@ def generate_forecast(df, sku, days_to_forecast=30):
     hist_dates = [d.strftime('%Y-%m-%d') for d in df_ts.index]
     hist_values = ts_data.tolist()
 
+    # Anomaly Detection
+    mean_val = np.mean(hist_values)
+    std_val = np.std(hist_values)
+    upper_threshold = mean_val + (2 * std_val)
+    lower_threshold = mean_val - (2 * std_val)
+    
+    anomalies = []
+    for d_str, v in zip(hist_dates, hist_values):
+        if v > upper_threshold:
+            anomalies.append({"date": d_str, "value": float(v), "type": "spike"})
+        elif v < lower_threshold and v >= 0:
+            anomalies.append({"date": d_str, "value": float(v), "type": "drop"})
+
     return {
         "sku": sku,
         "best_model": best_model_name,
@@ -153,6 +166,7 @@ def generate_forecast(df, sku, days_to_forecast=30):
             "dates": hist_dates,
             "values": hist_values,
         },
+        "anomalies": anomalies,
         "decomposition": {
             "trend": trend,
             "seasonality": seasonality,
@@ -273,3 +287,52 @@ def get_insights(df, sku=None):
             "days_of_inventory": round(days_of_inventory, 1)
         }
     }
+
+def get_portfolio(df):
+    required_cols = ['Date', 'SKU', 'Sales_Quantity', 'Current_Stock']
+    if not all(col in df.columns for col in required_cols):
+        raise ValueError("CSV must contain columns: Date, SKU, Sales_Quantity, Current_Stock")
+    
+    sku_sales = df.groupby('SKU')['Sales_Quantity'].sum().reset_index()
+    sku_sales = sku_sales.sort_values(by='Sales_Quantity', ascending=False)
+    
+    total_sales = sku_sales['Sales_Quantity'].sum()
+    if total_sales == 0:
+        total_sales = 1
+        
+    sku_sales['Cumulative_Sales'] = sku_sales['Sales_Quantity'].cumsum()
+    sku_sales['Cumulative_Pct'] = sku_sales['Cumulative_Sales'] / total_sales
+    
+    def classify_abc(pct):
+        if pct <= 0.8:
+            return 'A'
+        elif pct <= 0.95:
+            return 'B'
+        else:
+            return 'C'
+            
+    sku_sales['ABC_Class'] = sku_sales['Cumulative_Pct'].apply(classify_abc)
+    latest_stock = df.sort_values('Date').groupby('SKU')['Current_Stock'].last().reset_index()
+    portfolio_df = pd.merge(sku_sales, latest_stock, on='SKU')
+    
+    days_count = len(df['Date'].unique())
+    if days_count == 0: days_count = 1
+    
+    portfolio = []
+    for _, row in portfolio_df.iterrows():
+        status = "Healthy"
+        if row['Current_Stock'] <= 0:
+            status = "Stockout"
+        elif row['Current_Stock'] < (row['Sales_Quantity'] / days_count) * 7:
+            status = "Low Stock"
+            
+        portfolio.append({
+            "sku": row['SKU'],
+            "total_sales": int(row['Sales_Quantity']),
+            "current_stock": int(row['Current_Stock']),
+            "abc_class": row['ABC_Class'],
+            "status": status
+        })
+        
+    return {"portfolio": portfolio}
+

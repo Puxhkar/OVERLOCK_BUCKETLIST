@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
 
-from services import process_upload, generate_forecast, get_recommendations, get_insights
+from services import process_upload, generate_forecast, get_recommendations, get_insights, get_portfolio
 
 app = FastAPI(title="SmartStock AI API")
 
@@ -138,6 +138,17 @@ def insights(sku: Optional[str] = None):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating insights: {str(e)}")
+
+
+@app.get("/portfolio")
+def portfolio():
+    if not os.path.exists(DATA_PATH):
+        raise HTTPException(status_code=400, detail="No data uploaded yet.")
+    try:
+        df = pd.read_csv(DATA_PATH)
+        return get_portfolio(df)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating portfolio: {str(e)}")
 
 
 @app.get("/history")

@@ -6,8 +6,9 @@ const mockProducts = [
         id: 1,
         name: "Sleeved cardigan",
         category: "Outerwear",
+        image: "/images/cardigan_1772393800302.png",
         stock: 18,
-        price: "$55.00",
+        price: "₹55.00",
         profitMargin: "45%",
         sales30d: 294,
         recommendation: "Increase Stock",
@@ -18,8 +19,9 @@ const mockProducts = [
         id: 2,
         name: "Womens' sweatshirt",
         category: "Activewear",
+        image: "/images/sweatshirt_1772393813742.png",
         stock: 5,
-        price: "$45.00",
+        price: "₹45.00",
         profitMargin: "40%",
         sales30d: 412,
         recommendation: "Urgent Restock",
@@ -30,8 +32,9 @@ const mockProducts = [
         id: 3,
         name: "Relaxed fit linen shorts",
         category: "Bottoms",
+        image: "/images/shorts_1772393834173.png",
         stock: 328,
-        price: "$35.00",
+        price: "₹35.00",
         profitMargin: "15%",
         sales30d: 12,
         recommendation: "Decrease Stock",
@@ -42,8 +45,9 @@ const mockProducts = [
         id: 4,
         name: "Basic cotton t-shirt",
         category: "Tops",
+        image: "/images/tshirt_1772393850096.png",
         stock: 145,
-        price: "$20.00",
+        price: "₹20.00",
         profitMargin: "25%",
         sales30d: 150,
         recommendation: "Maintain",
@@ -54,8 +58,9 @@ const mockProducts = [
         id: 5,
         name: "Classic Denim Jacket",
         category: "Outerwear",
+        image: "/images/denim_1772393870070.png",
         stock: 12,
-        price: "$85.00",
+        price: "₹85.00",
         profitMargin: "50%",
         sales30d: 89,
         recommendation: "Increase Stock",
@@ -89,8 +94,12 @@ const ProductSalesTable = () => {
                             <tr key={product.id} style={{ borderBottom: '1px solid var(--border-subtle)' }} className="hover-scale-row">
                                 <td style={{ padding: '1rem 0' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                        <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, color: 'var(--text-muted)' }}>
-                                            {product.name.charAt(0)}
+                                        <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, color: 'var(--text-muted)', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+                                            {product.image ? (
+                                                <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                product.name.charAt(0)
+                                            )}
                                         </div>
                                         <div>
                                             <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{product.name}</div>
