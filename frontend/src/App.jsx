@@ -1,19 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Package, Activity, LogOut, History as HistoryIcon, LayoutDashboard, Search, Bell, User, UploadCloud, Asterisk, Home, Shirt, ShoppingCart, Truck, Users, Settings } from 'lucide-react';
+import { Package, Activity, History as HistoryIcon, LayoutDashboard, Search, Bell, UploadCloud, Asterisk, Home, Shirt, ShoppingCart, Truck, Users, Settings } from 'lucide-react';
 
 import LandingPage from './components/LandingPage';
 import UploadSection from './components/UploadSection';
 import Dashboard from './components/Dashboard';
-import Auth from './components/Auth';
 import History from './components/History';
 
 import { API_BASE } from './config';
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [username, setUsername] = useState('');
-
   const [isUploaded, setIsUploaded] = useState(false);
   const [skus, setSkus] = useState([]);
   const [selectedSku, setSelectedSku] = useState('');
@@ -25,53 +21,26 @@ function App() {
 
   const [currentView, setCurrentView] = useState('landing');
 
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUsername('');
-    setIsUploaded(false);
-    setSkus([]);
-    setSelectedSku('');
-    setForecastData(null);
-    setCurrentView('landing');
-  }, []);
-
-  const fetchUserStatus = useCallback(async (jwtToken) => {
+  const fetchUserStatus = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE}/user/me`, {
-        headers: { Authorization: `Bearer ${jwtToken}` }
-      });
-      setUsername(res.data.username);
-
+      const res = await axios.get(`${API_BASE}/user/me`);
       if (res.data.has_data) {
         setIsUploaded(true);
         setSkus(res.data.skus);
         if (res.data.skus.length > 0) {
           setSelectedSku(res.data.skus[0]);
         }
-        setCurrentView('dashboard');
       } else {
         setIsUploaded(false);
-        setCurrentView('upload');
       }
     } catch (err) {
       console.error(err);
-      handleLogout();
     }
-  }, [setUsername, setIsUploaded, setSkus, setSelectedSku, setCurrentView, handleLogout]);
+  }, []);
 
   useEffect(() => {
-    if (token) {
-      fetchUserStatus(token);
-    } else {
-      setCurrentView('landing');
-    }
-  }, [token, fetchUserStatus]);
-
-  const handleLoginSuccess = (newToken) => {
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
-  };
+    fetchUserStatus();
+  }, [fetchUserStatus]);
 
   const handleUploadSuccess = (data) => {
     setIsUploaded(true);
@@ -88,38 +57,30 @@ function App() {
   };
 
   const fetchSkuData = useCallback(async (sku) => {
-    if (!token) return;
     setLoading(true);
-    const headers = { Authorization: `Bearer ${token}` };
-
     try {
-      const forecastRes = await axios.get(`${API_BASE}/forecast?sku=${sku}&days=30`, { headers });
+      const forecastRes = await axios.get(`${API_BASE}/forecast?sku=${sku}&days=30`);
       setForecastData(forecastRes.data);
 
-      const recommendRes = await axios.get(`${API_BASE}/recommend?sku=${sku}&lead_time=7`, { headers });
+      const recommendRes = await axios.get(`${API_BASE}/recommend?sku=${sku}&lead_time=7`);
       setRecommendData(recommendRes.data);
 
-      const insightsRes = await axios.get(`${API_BASE}/insights?sku=${sku}`, { headers });
+      const insightsRes = await axios.get(`${API_BASE}/insights?sku=${sku}`);
       setInsightsData(insightsRes.data);
     } catch (err) {
-      console.error(err);
-      if (err.response?.status === 401) {
-        handleLogout();
-      } else {
-        console.error('API Error:', err);
-      }
+      console.error('API Error:', err);
     } finally {
       setLoading(false);
     }
-  }, [token, setLoading, setForecastData, setRecommendData, setInsightsData, handleLogout]);
+  }, []);
 
   useEffect(() => {
-    if (selectedSku && token && currentView === 'dashboard') {
+    if (selectedSku && currentView === 'dashboard') {
       fetchSkuData(selectedSku);
     }
-  }, [selectedSku, currentView, token, fetchSkuData]);
+  }, [selectedSku, currentView, fetchSkuData]);
 
-  if (!token || currentView === 'landing') {
+  if (currentView === 'landing') {
     return (
       <div className="app-container" style={{ display: 'block' }}>
         <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', borderBottom: '1px solid var(--border-subtle)', background: 'white' }}>
@@ -130,30 +91,18 @@ function App() {
             <span style={{ color: 'var(--text-main)' }}>SmartStock AI</span>
           </div>
 
-          {currentView === 'landing' && (
-            <div style={{ display: 'none' }} className="landing-desktop-nav"></div> /* Optional: We can just use an inline flex if we want it always visible */
-          )}
-          {currentView === 'landing' && (
-            <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              <span style={{ cursor: 'pointer', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = 'var(--text-main)'} onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'} onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>How It Works</span>
-              <span style={{ cursor: 'pointer', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = 'var(--text-main)'} onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'} onClick={() => document.getElementById('whyus')?.scrollIntoView({ behavior: 'smooth' })}>Why Use This</span>
-              <span style={{ cursor: 'pointer', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = 'var(--text-main)'} onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'} onClick={() => document.getElementById('testimonials')?.scrollIntoView({ behavior: 'smooth' })}>Reviews</span>
-            </div>
-          )}
+          <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = 'var(--text-main)'} onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'} onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>How It Works</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = 'var(--text-main)'} onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'} onClick={() => document.getElementById('whyus')?.scrollIntoView({ behavior: 'smooth' })}>Why Use This</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = 'var(--text-main)'} onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'} onClick={() => document.getElementById('testimonials')?.scrollIntoView({ behavior: 'smooth' })}>Reviews</span>
+          </div>
 
-          {currentView === 'landing' ? (
-            token ? (
-              <button className="btn btn-primary hover-scale" onClick={() => setCurrentView('dashboard')}>Go to Dashboard</button>
-            ) : (
-              <button className="btn btn-primary hover-scale" onClick={() => setCurrentView('auth')}>Sign In</button>
-            )
-          ) : (
-            <button className="btn btn-outline hover-scale" onClick={() => setCurrentView('landing')}>Back to Home</button>
-          )}
+          <button className="btn btn-primary hover-scale" onClick={() => setCurrentView(isUploaded ? 'dashboard' : 'upload')}>
+            {isUploaded ? 'Go to Dashboard' : 'Get Started'}
+          </button>
         </nav>
         <main>
-          {currentView === 'landing' && <LandingPage onGetStarted={() => token ? setCurrentView('dashboard') : setCurrentView('auth')} />}
-          {currentView === 'auth' && <Auth onLoginSuccess={handleLoginSuccess} />}
+          <LandingPage onGetStarted={() => setCurrentView(isUploaded ? 'dashboard' : 'upload')} />
         </main>
       </div>
     );
@@ -163,7 +112,6 @@ function App() {
     <div className="app-container">
       {/* Top Navbar */}
       <nav className="top-navbar animate-fade-in">
-        {/* Logo Area */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'white' }}>
           <div className="hover-scale" style={{ background: '#11111A', border: '1px solid rgba(255,255,255,0.05)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }} onClick={() => setCurrentView('landing')}>
             <Asterisk size={20} color="white" />
@@ -171,7 +119,6 @@ function App() {
           <span style={{ fontWeight: 600, fontSize: '1.2rem', letterSpacing: '0.5px' }}>SmartStock AI</span>
         </div>
 
-        {/* Center Nav Items */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div className={`navbar-icon ${currentView === 'landing' ? 'active' : ''}`} title="Home" onClick={() => setCurrentView('landing')}>
             <Home size={20} />
@@ -199,13 +146,12 @@ function App() {
           </div>
         </div>
 
-        {/* Right Side Items */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div className="navbar-icon" title="Settings" style={{ cursor: 'not-allowed', opacity: 0.4 }}>
             <Settings size={20} />
           </div>
-          <div className="navbar-icon" title="Sign Out" onClick={handleLogout} style={{ color: '#EF4444' }}>
-            <LogOut size={20} />
+          <div className="hover-scale" style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #A78BFA, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 600, cursor: 'default', fontSize: '0.9rem' }}>
+            D
           </div>
         </div>
       </nav>
@@ -236,23 +182,18 @@ function App() {
             )}
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '1rem' }}>
-              {/* Actual Search Bar for header */}
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
                 <Search size={16} style={{ position: 'absolute', left: '14px', color: 'var(--text-muted)' }} />
                 <input type="text" placeholder="Search..." className="hover-scale" style={{ background: 'white', border: '1px solid var(--border-subtle)', borderRadius: '24px', padding: '0.6rem 1rem 0.6rem 2.2rem', color: 'var(--text-main)', fontSize: '0.85rem', width: '220px', outline: 'none' }} />
               </div>
-
               <button className="btn-ghost hover-scale" style={{ width: '40px', height: '40px', padding: 0, borderRadius: '50%', background: 'white', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={18} /></button>
-              <div className="hover-scale" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #A78BFA, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
-                {username.charAt(0).toUpperCase()}
-              </div>
             </div>
           </div>
         </header>
 
         <main className="animate-fade-in">
-          {currentView === 'history' && <History token={token} onSelect={handleHistorySelect} />}
-          {currentView === 'upload' && <UploadSection onUploadSuccess={handleUploadSuccess} token={token} />}
+          {currentView === 'history' && <History onSelect={handleHistorySelect} />}
+          {currentView === 'upload' && <UploadSection onUploadSuccess={handleUploadSuccess} />}
           {currentView === 'dashboard' && (
             !isUploaded ? (
               <div style={{ textAlign: 'center', marginTop: '4rem' }}>
@@ -269,11 +210,6 @@ function App() {
                 recommendData={recommendData}
               />
             )
-          )}
-          {currentView === 'auth' && (
-            <div style={{ textAlign: 'center', marginTop: '4rem' }}>
-              <h3>Authenticating...</h3>
-            </div>
           )}
         </main>
       </div>
