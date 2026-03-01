@@ -1,7 +1,7 @@
 # SmartStock AI 📦✨
 
 SmartStock AI is a full-stack AI-powered Inventory Demand Forecasting Web Application designed to look like a modern SaaS analytics platform.
-
+oppp
 ## Features Included 🚀
 - **CSV Data Upload**: Dynamic schema validation and data parsing for historical sales records.
 - **Time Series Processing**: Automated frequency detection, decomposition, and plotting hooks.
