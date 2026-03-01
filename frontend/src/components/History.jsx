@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { History as HistoryIcon, Clock, Package, Activity } from 'lucide-react';
 
-const API_BASE = 'http://127.0.0.1:8000';
+import { API_BASE } from '../config';
 
 const History = ({ token, onSelect }) => {
     const [history, setHistory] = useState([]);

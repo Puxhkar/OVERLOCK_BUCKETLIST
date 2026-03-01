@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { UploadCloud, FileText } from 'lucide-react';
 
-const API_BASE = 'http://127.0.0.1:8000';
+import { API_BASE } from '../config';
 
 const UploadSection = ({ onUploadSuccess, token }) => {
     const [file, setFile] = useState(null);

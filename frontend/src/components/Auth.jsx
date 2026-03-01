@@ -4,8 +4,7 @@ import { Activity, Lock, User, ChevronRight } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 
 
-const API_BASE = 'http://127.0.0.1:8000';
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_STUB.apps.googleusercontent.com";
+import { API_BASE, GOOGLE_CLIENT_ID } from '../config';
 
 
 const Auth = ({ onLoginSuccess }) => {
