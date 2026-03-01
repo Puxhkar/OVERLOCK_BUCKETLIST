@@ -12,6 +12,9 @@ from pydantic import BaseModel
 import pandas as pd
 
 from services import process_upload, generate_forecast, get_recommendations, get_insights
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+
 
 app = FastAPI(title="SmartStock AI API")
 
@@ -26,6 +29,7 @@ app.add_middleware(
 os.makedirs("data", exist_ok=True)
 DB_PATH = "data/users.db"
 SECRET_KEY = "supersecretkey_for_demo_purposes_only"
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "YOUR_GOOGLE_CLIENT_ID_STUB.apps.googleusercontent.com")
 
 
 def init_db():
@@ -102,6 +106,55 @@ def login(user: UserLogin):
         algorithm="HS256"
     )
     return {"access_token": token, "token_type": "bearer"}
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
+
+@app.post("/auth/google")
+def google_auth(data: GoogleAuthRequest):
+    try:
+        if data.credential.startswith("dummy_token_"):
+            # Developer Bypass for Hackathon Demo
+            email = data.credential.replace("dummy_token_", "")
+            idinfo = {'email': email}
+        else:
+            # Verify the real Google Token
+            idinfo = id_token.verify_oauth2_token(data.credential, google_requests.Request(), GOOGLE_CLIENT_ID)
+        
+        # ID token is valid. Get user's Google ID from `sub` or email
+        email = idinfo['email']
+        username = email.split('@')[0] # Simple username fallback
+        
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("SELECT id FROM users WHERE username=?", (username,))
+        row = c.fetchone()
+        
+        if not row:
+            # Register new user if they don't exist
+            # We use a dummy password for Google-only accounts
+            dummy_pw = bcrypt.hashpw(os.urandom(24), bcrypt.gensalt()).decode('utf-8')
+            c.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, dummy_pw))
+            user_id = c.lastrowid
+            c.execute("INSERT INTO user_data (user_id, skus, has_data) VALUES (?, ?, ?)", (user_id, "[]", False))
+            conn.commit()
+        else:
+            user_id = row[0]
+            
+        conn.close()
+        
+        # Generate our own JWT
+        token = jwt.encode(
+            {"sub": username, "exp": datetime.utcnow() + timedelta(days=7)},
+            SECRET_KEY, 
+            algorithm="HS256"
+        )
+        return {"access_token": token, "token_type": "bearer"}
+        
+    except ValueError:
+        # Invalid token
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
 
 @app.get("/user/me")
 def get_user_status(username: str = Depends(get_current_user)):
