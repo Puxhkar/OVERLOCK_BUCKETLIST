@@ -331,15 +331,15 @@ h6 {
 
 @keyframes spin {
   100% {
-    transform: rotate(360deg);
+    transform: rotate(360deg)
   }
 }
 
 .hover-scale-row {
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease
 }
 
 .hover-scale-row:hover {
-  background-color: rgba(247, 248, 250, 0.5);
+  background-color: rgba(247, 248, 250, 0.5)
   /* lighter than var(--bg-dark) */
 }
